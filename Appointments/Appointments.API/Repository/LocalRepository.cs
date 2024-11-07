@@ -20,8 +20,7 @@ namespace Appointments.API.Repository
                     SenderEmail = "ajmarrugos@gmail.com",
                     RecipientEmail = "alberto.marrugo@unosquare.com",
                     ApptName = "Alberto's Assesment",
-                    ApptDate = DateTime.Now,
-                    Status = AppointmentStatus.Created
+                    ApptDate = DateTime.Now
                 },
             };
         }
@@ -40,8 +39,9 @@ namespace Appointments.API.Repository
         /// </summary>
         /// <param name="id"></param>
         /// <returns>An specific appointment</returns>
-        public Appointment? GetAppointmentsById(Guid id)
+        public async Task<Appointment?> GetAppointmentsById(Guid id)
         {
+            await Task.Delay(TimeSpan.FromSeconds(2));
             return _appointments.FirstOrDefault(a => a.Id == id);
         }
 
@@ -50,8 +50,9 @@ namespace Appointments.API.Repository
         /// </summary>
         /// <param name="email"></param>
         /// <returns>Appointments by Sender</returns>
-        public Appointment? GetAppointmentsBySender(string email)
+        public async Task<Appointment?> GetAppointmentsBySender(string email)
         {
+            await Task.Delay(TimeSpan.FromSeconds(2));
             return _appointments.FirstOrDefault(a => a.SenderEmail == email);
         }
     }

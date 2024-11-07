@@ -19,10 +19,10 @@ namespace Appointments.API.Controllers
 
         // Endpoint to get a specific appointment by ID
         [HttpGet("{id:Guid}")]
-        public ActionResult<Appointment> GetById(Guid id)
+        public async Task<ActionResult<Appointment>> GetById(Guid id)
         {
             var repo = new LocalRepository();
-            var appointment = repo.GetAppointmentsById(id);
+            var appointment = await repo.GetAppointmentsById(id);
 
             if (appointment is null)
             {
@@ -33,10 +33,10 @@ namespace Appointments.API.Controllers
 
         // Endpoint to get a specific appointment by Sender Email
         [HttpGet("{sender}")]
-        public ActionResult<Appointment> GetBySender(string email)
+        public async Task<ActionResult<Appointment>> GetBySender(string email)
         {
             var repo = new LocalRepository();
-            var appointment = repo.GetAppointmentsBySender(email);
+            var appointment = await repo.GetAppointmentsBySender(email);
 
             if (appointment is null)
             {
