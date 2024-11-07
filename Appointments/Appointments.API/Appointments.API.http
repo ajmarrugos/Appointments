@@ -1,0 +1,6 @@
+@Appointments.API_HostAddress = https://localhost:5122
+
+GET {{Appointments.API_HostAddress}}/appointments/
+Accept: application/json
+
+###
