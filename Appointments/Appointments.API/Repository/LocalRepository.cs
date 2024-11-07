@@ -2,7 +2,7 @@
 
 namespace Appointments.API.Repository
 {
-    public class LocalRepository
+    public class LocalRepository : IRepository
     {
         /// <summary>
         /// In-memory list to store appointments (acts as a temporary DB).

@@ -9,9 +9,9 @@ namespace Appointments.API.Controllers
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
-        private readonly LocalRepository local;
+        private readonly IRepository local;
 
-        public AppointmentsController(LocalRepository local)
+        public AppointmentsController(IRepository local)
         {
             this.local = local;
         }
