@@ -9,13 +9,20 @@ namespace Appointments.API.Controllers
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
+        private readonly LocalRepository local;
+
+        public AppointmentsController(LocalRepository local)
+        {
+            this.local = local;
+        }
+
         // Endpoint to get all appointments
         [HttpGet]
         [OutputCache]
         public List<Appointment> Get()
         {
             var repo = new LocalRepository();
-            var appointments = repo.GetAppointments();
+            var appointments = local.GetAppointments();
             return appointments;
         }
 
@@ -25,7 +32,7 @@ namespace Appointments.API.Controllers
         public async Task<ActionResult<Appointment>> GetById(Guid id)
         {
             var repo = new LocalRepository();
-            var appointment = await repo.GetAppointmentsById(id);
+            var appointment = await local.GetAppointmentsById(id);
 
             if (appointment is null)
             {
@@ -40,7 +47,7 @@ namespace Appointments.API.Controllers
         public async Task<ActionResult<Appointment>> GetBySender(string email)
         {
             var repo = new LocalRepository();
-            var appointment = await repo.GetAppointmentsBySender(email);
+            var appointment = await local.GetAppointmentsBySender(email);
 
             if (appointment is null)
             {
