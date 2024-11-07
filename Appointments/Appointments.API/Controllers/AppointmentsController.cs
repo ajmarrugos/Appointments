@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Appointments.API.Models;
 using Appointments.API.Repository;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Appointments.API.Controllers
 {
@@ -10,6 +11,7 @@ namespace Appointments.API.Controllers
     {
         // Endpoint to get all appointments
         [HttpGet]
+        [OutputCache]
         public List<Appointment> Get()
         {
             var repo = new LocalRepository();
@@ -19,6 +21,7 @@ namespace Appointments.API.Controllers
 
         // Endpoint to get a specific appointment by ID
         [HttpGet("{id:Guid}")]
+        [OutputCache]
         public async Task<ActionResult<Appointment>> GetById(Guid id)
         {
             var repo = new LocalRepository();
@@ -33,6 +36,7 @@ namespace Appointments.API.Controllers
 
         // Endpoint to get a specific appointment by Sender Email
         [HttpGet("{sender}")]
+        [OutputCache]
         public async Task<ActionResult<Appointment>> GetBySender(string email)
         {
             var repo = new LocalRepository();
