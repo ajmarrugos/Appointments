@@ -1,6 +1,11 @@
 @Appointments.API_HostAddress = https://localhost:5122
+@SampleAppointment = b2d4a2d4-1e85-43c3-a1a4-1f2244923dbc
 
-GET {{Appointments.API_HostAddress}}/appointments/
-Accept: application/json
+### Get a List of Appointments
+GET {{Appointments.API_HostAddress}}/appointments
+Content-Type: application/json
 
-###
+
+### Get Appointment by ID
+GET {{Appointments.API_HostAddress}}/appointments/{{SampleAppointment}}
+Content-Type: application/json

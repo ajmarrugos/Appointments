@@ -24,4 +24,10 @@ app.MapGet("/appointments", () =>
     return Results.Ok(appointments);
 });
 
+app.MapGet("/appointments/{id}", (Guid id) =>
+{
+    var appointment = appointments.FirstOrDefault(a => a.Id == id);
+    return appointment is not null ? Results.Ok(appointment) : Results.NotFound();
+});
+
 app.Run();
