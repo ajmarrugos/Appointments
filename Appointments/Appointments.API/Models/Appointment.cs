@@ -1,7 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Appointments.API.Models
 {
+    // Enum to represent different states of an appointment
+    public enum AppointmentStatus
+    {
+        Created,
+        Approved,
+        Rescheduled,
+        Canceled
+    }
+
+    // Appointment class 
     public class Appointment
     {
         // Automatically generates a new Guid for each appointment.
@@ -25,6 +36,10 @@ namespace Appointments.API.Models
         [Required(ErrorMessage = "Appointment date is required.")]
         [FutureDate(ErrorMessage = "Appointment date must be in the future.")]
         public DateTime ApptDate { get; set; }
+
+        // Status of the appointment (Created, Approved, Rescheduled, Canceled)
+        [Required(ErrorMessage = "Appointment status is required.")]
+        public AppointmentStatus Status { get; set; } = AppointmentStatus.Created;
     }
 
     // Custom Validation Attribute for validating that the appointment date is in the future
@@ -35,7 +50,7 @@ namespace Appointments.API.Models
         {
             if (value is DateTime dateTime)
             {
-                return dateTime > DateTime.Now;  // Ensure date is in the future
+                return dateTime > DateTime.Now;
             }
             return false;
         }
