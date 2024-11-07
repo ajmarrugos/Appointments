@@ -1,41 +1,48 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Appointments.API.Models;
+using Appointments.API.Repository;
 
 namespace Appointments.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
-        // In-memory list to store appointments 
-        private static readonly List<Appointment> Appointments = new();
-
-        // GET: api/appointments - Endpoint to get all appointments
+        // Endpoint to get all appointments
         [HttpGet]
-        public IActionResult GetAppointments()
+        public List<Appointment> Get()
         {
-            return Ok(Appointments);
+            var repo = new LocalRepository();
+            var appointments = repo.GetAppointments();
+            return appointments;
         }
 
-        // GET: api/appointments/{id} - Endpoint to get a specific appointment by ID
-        [HttpGet("{id}")]
-        public IActionResult GetAppointmentById(Guid id)
+        // Endpoint to get a specific appointment by ID
+        [HttpGet("{id:Guid}")]
+        public ActionResult<Appointment> GetById(Guid id)
         {
-            var appointment = Appointments.FirstOrDefault(a => a.Id == id);
-            return appointment is not null ? Ok(appointment) : NotFound();
-        }
+            var repo = new LocalRepository();
+            var appointment = repo.GetAppointmentsById(id);
 
-        // POST: api/appointments - Endpoint to create a new appointment
-        [HttpPost]
-        public IActionResult CreateAppointment([FromBody] Appointment appointment)
-        {
-            if (!ModelState.IsValid)
+            if (appointment is null)
             {
-                return BadRequest(ModelState);
+                return NotFound();
             }
+            return appointment;
+        }
 
-            Appointments.Add(appointment);
-            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, appointment);
+        // Endpoint to get a specific appointment by Sender Email
+        [HttpGet("{sender}")]
+        public ActionResult<Appointment> GetBySender(string email)
+        {
+            var repo = new LocalRepository();
+            var appointment = repo.GetAppointmentsBySender(email);
+
+            if (appointment is null)
+            {
+                return NotFound();
+            }
+            return appointment;
         }
     }
 }
