@@ -15,7 +15,7 @@ namespace Appointments.API.Models
     public class Appointment
     {
         // Automatically generates a new Guid for each appointment.
-        public Guid Id { get; init; } = Guid.NewGuid();
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         // SenderEmail must be provided and must be in a valid email format.
         [Required(ErrorMessage = "Sender email is required.")]
