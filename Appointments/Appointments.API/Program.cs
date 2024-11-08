@@ -22,11 +22,11 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // Registers OutputCache for speeding endpoint response time
     builder.Services.AddOutputCache(opt =>
-        opt.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(30));
+        opt.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60));
 
     // Register repositories as scoped services
-    services.AddSingleton<IAppointmentsRepository, AppointmentsDB>(); // Using the SQL Database repository
-    // services.AddSingleton<IAppointmentsRepository, LocalRepository>(); // Using the Local Repository
+    // services.AddSingleton<IAppointmentsRepository, AppointmentsDB>(); // Using the SQL Database repository
+    services.AddSingleton<IAppointmentsRepository, LocalRepository>(); // Using the Local Repository
 
     // Register the DbContext with dependency injection
     builder.Services.AddDbContext<AppDbContext>(opt =>

@@ -1,4 +1,5 @@
-﻿using Appointments.API.Models;
+﻿using Appointments.API.Data;
+using Appointments.API.Models;
 using Appointments.API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,11 @@ namespace Appointments.API.Repositories
     // SQL database repository for appointments, implementing IAppointmentsRepository.
     public class AppointmentsDB : IAppointmentsRepository
     {
-        private readonly AppointmentsDbContext _context;
+        // DB context where to store Data
+        private readonly AppDbContext _context;
 
-        public AppointmentsDB(AppointmentsDbContext context)
+        // Instance constructor for loading context from a DataBase
+        public AppointmentsDB(AppDbContext context)
         {
             _context = context;
         }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Appointments.API.Interfaces;
+﻿using Appointments.API.Interfaces;
 using Appointments.API.Models;
 
 namespace Appointments.API.Repositories
@@ -7,7 +6,7 @@ namespace Appointments.API.Repositories
     // Repository for handling appointment operations in a local memory
     public class LocalRepository : IAppointmentsRepository
     {
-        // List for to store appointments while development
+        // List where to store appointments while development
         private readonly List<Appointment> _appointments;
 
         // Instance constructor for a local repository with pre-loaded appointments
