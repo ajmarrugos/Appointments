@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Appointments.API.Repositories
 {
     // SQL database repository for appointments, implementing IAppointmentsRepository.
-    public class AppointmentsDB : IAppointmentsDB
+    public class AppointmentsDB : IAppointmentsRepository
     {
         private readonly AppointmentsDbContext _context;
 

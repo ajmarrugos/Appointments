@@ -4,46 +4,44 @@ using Appointments.API.Models;
 
 namespace Appointments.API.Repositories
 {
-    // In-memory repository for storing appointments during runtime.
+    // Repository for handling appointment operations in a local memory
     public class LocalRepository : IAppointmentsRepository
     {
-        // Concurrent dictionary to store appointments while development
-        private readonly ConcurrentDictionary<Guid, Appointment> _appointments = new();
+        // List for to store appointments while development
+        private readonly List<Appointment> _appointments;
 
         // Instance constructor for a local repository with pre-loaded appointments
         public LocalRepository()
         {
-            var appointment1 = new Appointment
+            // Pre-load some sample data
+            _appointments = new List<Appointment>
             {
-                Id = Guid.NewGuid(),
-                SenderEmail = "ajmarrugos@gmail.com",
-                RecipientEmail = "alberto.marrugo@unosquare.com",
-                ApptName = "Technical Assesment",
-                ApptDate = DateTime.Now.AddDays(2),  // Future date
-                Status = AppointmentStatus.Created
+                new Appointment
+                {
+                    SenderEmail = "sender1@example.com",
+                    RecipientEmail = "recipient1@example.com",
+                    ApptName = "Test Appointment 1",
+                    ApptDate = DateTime.Now.AddDays(1),
+                    Status = AppointmentStatus.Created
+                },
+                new Appointment
+                {
+                    SenderEmail = "sender2@example.com",
+                    RecipientEmail = "recipient2@example.com",
+                    ApptName = "Test Appointment 2",
+                    ApptDate = DateTime.Now.AddDays(2),
+                    Status = AppointmentStatus.Created
+                }
             };
-
-            var appointment2 = new Appointment
-            {
-                Id = Guid.NewGuid(),
-                SenderEmail = "alberto.marrugo@unosquare.com",
-                RecipientEmail = "ajmarrugos@gmail.com",
-                ApptName = "Assesment Feedback",
-                ApptDate = DateTime.Now.AddDays(3),  // Future date
-                Status = AppointmentStatus.Created
-            };
-
-            _appointments[appointment1.Id] = appointment1;
-            _appointments[appointment2.Id] = appointment2;
         }
 
         /// <summary>
         /// Retrieves all appointments currently in the repository.
         /// </summary>
         /// <returns>An enumerated list of appointments</returns>
-        public IEnumerable<Appointment> GetAllAppointments()
+        public async Task<IEnumerable<Appointment>> GetAllAppointments()
         {
-            return _appointments.Values.AsEnumerable();
+            return await Task.FromResult(_appointments);
         }
 
         /// <summary>
@@ -52,10 +50,10 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns>An specific appointment</returns>
-        public Appointment? GetAppointmentById(Guid id)
+        public async Task<Appointment> GetAppointmentById(Guid id)
         {
-            _appointments.TryGetValue(id, out var appointment);
-            return appointment;
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -63,9 +61,10 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="email"></param>
         /// <returns>Appointments by Sender</returns>
-        public IEnumerable<Appointment> GetAppointmentsBySender(string senderEmail)
+        public async Task<IEnumerable<Appointment>> GetAppointmentsBySender(string senderEmail)
         {
-            return _appointments.Values.Where(a => a.SenderEmail == senderEmail);
+            var appointments = _appointments.Where(a => a.SenderEmail.Equals(senderEmail, StringComparison.OrdinalIgnoreCase)).ToList();
+            return await Task.FromResult(appointments);
         }
 
         /// <summary>
@@ -73,10 +72,11 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="appointment"></param>
         /// <returns>The appointment created</returns>
-        public Appointment CreateAppointment(Appointment appointment)
+        public async Task<Appointment> CreateAppointment(Appointment appointment)
         {
-            _appointments[appointment.Id] = appointment;
-            return appointment;
+            appointment.Id = Guid.NewGuid(); // Ensure a new ID for each appointment
+            _appointments.Add(appointment);
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -86,15 +86,15 @@ namespace Appointments.API.Repositories
         /// <param name="id"></param>
         /// <param name="newApptDate"></param>
         /// <returns>The appointment rescheduled</returns>
-        public Appointment? RescheduleAppointment(Guid id, DateTime newDate)
+        public async Task<Appointment> RescheduleAppointment(Guid id, DateTime newDate)
         {
-            if (_appointments.TryGetValue(id, out var appointment))
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            if (appointment != null)
             {
                 appointment.ApptDate = newDate;
                 appointment.Status = AppointmentStatus.Rescheduled;
-                return appointment;
             }
-            return null;
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -103,15 +103,14 @@ namespace Appointments.API.Repositories
         /// <param name="id"></param>
         /// <param name="status"></param>
         /// <returns>The updated appointment, or null if the appointment ID is not found.</returns>
-        public Appointment? SignoffAppointment(Guid id, AppointmentStatus status)
+        public async Task<Appointment> SignoffAppointment(Guid id, AppointmentStatus status)
         {
-            if (_appointments.TryGetValue(id, out var appointment) &&
-                (status == AppointmentStatus.Approved || status == AppointmentStatus.Canceled))
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            if (appointment != null)
             {
                 appointment.Status = status;
-                return appointment;
             }
-            return null;
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -119,14 +118,15 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns>True if the appointment was deleted, False if it wasn't found or was not Canceled.</returns>
-        public bool DeleteAppointment(Guid id)
+        public async Task<bool> DeleteAppointment(Guid id)
         {
-            if (_appointments.TryGetValue(id, out var appointment) &&
-                appointment.Status == AppointmentStatus.Canceled)
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            if (appointment != null && appointment.Status == AppointmentStatus.Canceled)
             {
-                return _appointments.TryRemove(id, out _);
+                _appointments.Remove(appointment);
+                return await Task.FromResult(true);
             }
-            return false;
+            return await Task.FromResult(false);
         }
     }
 }
