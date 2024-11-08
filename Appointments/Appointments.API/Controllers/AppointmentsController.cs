@@ -21,7 +21,6 @@ namespace Appointments.API.Controllers
         [OutputCache]
         public List<Appointment> Get()
         {
-            var repo = new LocalRepository();
             var appointments = local.GetAppointments();
             return appointments;
         }
@@ -31,7 +30,6 @@ namespace Appointments.API.Controllers
         [OutputCache]
         public async Task<ActionResult<Appointment>> GetById(Guid id)
         {
-            var repo = new LocalRepository();
             var appointment = await local.GetAppointmentsById(id);
 
             if (appointment is null)
@@ -46,7 +44,6 @@ namespace Appointments.API.Controllers
         [OutputCache]
         public async Task<ActionResult<Appointment>> GetBySender(string email)
         {
-            var repo = new LocalRepository();
             var appointment = await local.GetAppointmentsBySender(email);
 
             if (appointment is null)
