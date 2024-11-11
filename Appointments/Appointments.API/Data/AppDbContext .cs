@@ -5,16 +5,39 @@ namespace Appointments.API.Data
 {
     public class AppDbContext : DbContext
     {
-        // Defines a DbSet properties for each entity in your database
+        // DbSet for Appointments table
         public DbSet<Appointment> Appointments { get; set; }
+
+        // DbSet for Users table
+        public DbSet<User> Users { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        // Optionally override OnModelCreating to configure model relationships
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-            // Additional model configuration can be added here
+            // Configure the Appointments table
+            modelBuilder.Entity<Appointment>()
+                .ToTable("Appointments")
+                .HasKey(a => a.Id);
+
+            modelBuilder.Entity<Appointment>()
+                .Property(a => a.Status)
+                .HasMaxLength(50);
+
+            // Configure the Users table
+            modelBuilder.Entity<User>()
+                .ToTable("Users")
+                .HasKey(u => u.Id);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Email)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Role)
+                .IsRequired()
+                .HasMaxLength(50);
         }
     }
 }

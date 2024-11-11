@@ -1,57 +1,87 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Appointments.API.Models
 {
-    // Enum to represent different states of an appointment
-    public enum AppointmentStatus
-    {
-        Created,
-        Approved,
-        Rescheduled,
-        Canceled
-    }
-
     // Appointment class 
     public class Appointment
     {
-        // Automatically generates a new Guid for each appointment.
-        public Guid Id { get; set; } = Guid.NewGuid();
+        // Key indexer / identifier assigned for each appointment
+        [Key]
+        public int Id { get; set; }
 
-        // SenderEmail must be provided and must be in a valid email format.
+        // SenderEmail must be provided and must be in a valid email format
         [Required(ErrorMessage = "Sender email is required.")]
         [EmailAddress(ErrorMessage = "Invalid sender email format.")]
-        public string SenderEmail { get; set; } = string.Empty;
+        public string Sender { get; set; } = string.Empty;
 
-        // RecipientEmail must be provided and must be in a valid email format.
+        // RecipientEmail must be provided and must be in a valid email format
         [Required(ErrorMessage = "Recipient email is required.")]
         [EmailAddress(ErrorMessage = "Invalid recipient email format.")]
-        public string RecipientEmail { get; set; } = string.Empty;
+        public string Recipient { get; set; } = string.Empty;
 
-        // ApptName must be provided and cannot be empty.
-        [Required(ErrorMessage = "Appointment name is required.")]
-        public string ApptName { get; set; } = string.Empty;
+        // ApptName must be provided and cannot be empty and must be 48 characters only
+        [Required(ErrorMessage = "Appointment name is required. No more than 48 characters"), StringLength(48)]
+        public string Name { get; set; } = string.Empty;
 
-        // ApptDate must be a valid date in the future.
-        [Required(ErrorMessage = "Appointment date is required.")]
-        [FutureDate(ErrorMessage = "Appointment date must be in the future.")]
-        public DateTime ApptDate { get; set; }
+        // ApptDate must be a valid date in the future
+        [Required(ErrorMessage = "Appointment date is required")]
+        [ValidDate(ErrorMessage = "Appointment date must be in  YY-MM-DD format and cannot be past")]
+        public DateOnly Date { get; set; }
+
+        // ApptTime must be a valid time in the future
+        [Required(ErrorMessage = "Appointment time is required ")]
+        [ValidTime(ErrorMessage = "Appointment date must be provided in HH:MM format and cannot be past")]
+        public TimeOnly Time { get; set; }
 
         // Status of the appointment (Created, Approved, Rescheduled, Canceled)
         [Required(ErrorMessage = "Appointment status is required.")]
-        public AppointmentStatus Status { get; set; } = AppointmentStatus.Created;
+        [ValidStatus(ErrorMessage = "Appointment status must be valid")]
+        public string Status { get; set; } = "created";
     }
 
     // Custom Validation Attribute for validating that the appointment date is in the future
-    public class FutureDateAttribute : ValidationAttribute
+    public class ValidDateAttribute : ValidationAttribute
     {
-        // Checks if the value (appointment date) is greater than the current date and time
-        public override bool IsValid(object? value)
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (value is DateTime dateTime)
+            if (value is DateOnly date)
             {
-                return dateTime > DateTime.Now;
+                if (date >= DateOnly.FromDateTime(DateTime.Now))
+                {
+                    return ValidationResult.Success;
+                }
+                return new ValidationResult("Date cannot be in the past.");
             }
-            return false;
+            return new ValidationResult("Invalid date format.");
+        }
+    }
+
+    // Custom Validation Attribute for validating that the appointment time is valid format
+    public class ValidTimeAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value is TimeOnly time)
+            {
+                return ValidationResult.Success;
+            }
+            return new ValidationResult("Invalid time format.");
+        }
+    }
+
+    // Custom Validation Attribute for validating that the appointment status is valid
+    public class ValidStatusAttribute : ValidationAttribute
+    {
+        private readonly string[] _validStatuses = { "created", "approved", "rescheduled", "rejected", "expired", "removed" };
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value is string status && Array.Exists(_validStatuses, s => s.Equals(status, StringComparison.OrdinalIgnoreCase)))
+            {
+                return ValidationResult.Success;
+            }
+            return new ValidationResult($"Invalid status. Allowed statuses are: {string.Join(", ", _validStatuses)}.");
         }
     }
 }
