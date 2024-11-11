@@ -58,6 +58,10 @@ namespace Appointments.API.Controllers
             }
         }
 
+        [HttpGet("{attribute}/{value}")]
+        public async Task<IActionResult> QueryAppointment(string attribute, string value) =>
+            Ok(await _appointments.QueryAppointments(attribute, value));
+
         [HttpPost] // POST: api/Appointments
         public async Task<ActionResult<Appointment>> CreateAppointment([FromBody] Appointment appointment)
         {
@@ -166,6 +170,27 @@ namespace Appointments.API.Controllers
 
             // Proceed with deletion
             await _appointments.DeleteAppointment(id);
+            return NoContent();
+        }
+
+        [HttpPut("expire")]
+        public async Task<IActionResult> ExpirePastAppointments()
+        {
+            var appointments = await _appointments.GetAllAppointments();
+            var currentTime = DateTime.Now;
+
+            foreach (var appointment in appointments)
+            {
+                if (appointment.Status == "created" &&
+                    (appointment.Date < DateOnly.FromDateTime(currentTime) ||
+                    (appointment.Date == DateOnly.FromDateTime(currentTime) &&
+                     appointment.Time < TimeOnly.FromDateTime(currentTime))))
+                {
+                    appointment.Status = "expired";
+                    await _appointments.UpdateAppointment(appointment);
+                }
+            }
+
             return NoContent();
         }
     }
