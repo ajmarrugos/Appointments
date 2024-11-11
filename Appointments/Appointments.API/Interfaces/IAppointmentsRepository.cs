@@ -5,10 +5,11 @@ namespace Appointments.API.Interfaces
     public interface IAppointmentsRepository
     {
         Task<IEnumerable<Appointment>> GetAllAppointments();
-        Task<Appointment> GetAppointmentById(int id);
-        Task<IEnumerable<Appointment>> QueryAppointments(string attribute, string value);
+        Task<Appointment> GetAppointmentById(Guid id);
+        Task<IEnumerable<Appointment>> GetAppointmentsBySender(string senderEmail);
         Task<Appointment> CreateAppointment(Appointment appointment);
-        Task UpdateAppointment(Appointment appointment);
-        Task DeleteAppointment(int id);
+        Task<Appointment> RescheduleAppointment(Guid id, DateTime newDate);
+        Task<Appointment> SignoffAppointment(Guid id, AppointmentStatus status);
+        Task<bool> DeleteAppointment(Guid id);
     }
 }

@@ -1,16 +1,38 @@
 ﻿using Appointments.API.Interfaces;
 using Appointments.API.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Appointments.API.Repositories
 {
     // Repository for handling appointment operations in a local memory
     public class LocalRepository : IAppointmentsRepository
     {
-        // List where to store appointments & users while development
-        private readonly List<Appointment> _appointments = new();
-        private readonly List<User> _users = new();
-        private int _nextId = 1; // Initial value for the auto-increment Id
+        // List where to store appointments while development
+        private readonly List<Appointment> _appointments;
+
+        // Instance constructor for a local repository with pre-loaded appointments
+        public LocalRepository()
+        {
+            // Pre-load some sample data
+            _appointments = new List<Appointment>
+            {
+                new Appointment
+                {
+                    SenderEmail = "sender1@example.com",
+                    RecipientEmail = "recipient1@example.com",
+                    ApptName = "Test Appointment 1",
+                    ApptDate = DateTime.Now.AddDays(1),
+                    Status = AppointmentStatus.Created
+                },
+                new Appointment
+                {
+                    SenderEmail = "sender2@example.com",
+                    RecipientEmail = "recipient2@example.com",
+                    ApptName = "Test Appointment 2",
+                    ApptDate = DateTime.Now.AddDays(2),
+                    Status = AppointmentStatus.Created
+                }
+            };
+        }
 
         /// <summary>
         /// Retrieves all appointments currently in the repository.
@@ -27,10 +49,10 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns>An specific appointment</returns>
-        public Task<Appointment> GetAppointmentById(int id)
+        public async Task<Appointment> GetAppointmentById(Guid id)
         {
             var appointment = _appointments.FirstOrDefault(a => a.Id == id);
-            return Task.FromResult(appointment);
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -38,21 +60,10 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="email"></param>
         /// <returns>Appointments by Sender</returns>
-        public async Task<IEnumerable<Appointment>> QueryAppointments(string attribute, string value)
+        public async Task<IEnumerable<Appointment>> GetAppointmentsBySender(string senderEmail)
         {
-            var query = _appointments.AsQueryable();
-
-            query = attribute.ToLower() switch
-            {
-                "id" => query.Where(a => a.Id.ToString() == value),
-                "name" => query.Where(a => a.Name == value),
-                "state" => query.Where(a => a.Status == value),
-                "date" => query.Where(a => a.Date.ToString("dd-MM-yy") == value),
-                "requestor" => query.Where(a => a.Sender == value),
-                _ => query
-            };
-
-            return await query.ToListAsync();
+            var appointments = _appointments.Where(a => a.SenderEmail.Equals(senderEmail, StringComparison.OrdinalIgnoreCase)).ToList();
+            return await Task.FromResult(appointments);
         }
 
         /// <summary>
@@ -60,12 +71,11 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="appointment"></param>
         /// <returns>The appointment created</returns>
-        public Task<Appointment> CreateAppointment(Appointment appointment)
+        public async Task<Appointment> CreateAppointment(Appointment appointment)
         {
-            appointment.Id = _nextId++;
-            appointment.Status = "created";
+            appointment.Id = Guid.NewGuid(); // Ensure a new ID for each appointment
             _appointments.Add(appointment);
-            return Task.FromResult(appointment);
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -75,15 +85,31 @@ namespace Appointments.API.Repositories
         /// <param name="id"></param>
         /// <param name="newApptDate"></param>
         /// <returns>The appointment rescheduled</returns>
-        public Task UpdateAppointment(Appointment appointment)
+        public async Task<Appointment> RescheduleAppointment(Guid id, DateTime newDate)
         {
-            var existing = _appointments.FirstOrDefault(a => a.Id == appointment.Id);
-            if (existing != null)
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            if (appointment != null)
             {
-                _appointments.Remove(existing);
-                _appointments.Add(appointment);
+                appointment.ApptDate = newDate;
+                appointment.Status = AppointmentStatus.Rescheduled;
             }
-            return Task.CompletedTask;
+            return await Task.FromResult(appointment);
+        }
+
+        /// <summary>
+        /// Changes the status of an appointment to Approved or Canceled.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="status"></param>
+        /// <returns>The updated appointment, or null if the appointment ID is not found.</returns>
+        public async Task<Appointment> SignoffAppointment(Guid id, AppointmentStatus status)
+        {
+            var appointment = _appointments.FirstOrDefault(a => a.Id == id);
+            if (appointment != null)
+            {
+                appointment.Status = status;
+            }
+            return await Task.FromResult(appointment);
         }
 
         /// <summary>
@@ -91,36 +117,15 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns>True if the appointment was deleted, False if it wasn't found or was not Canceled.</returns>
-        public Task DeleteAppointment(int id)
+        public async Task<bool> DeleteAppointment(Guid id)
         {
             var appointment = _appointments.FirstOrDefault(a => a.Id == id);
-            if (appointment != null)
+            if (appointment != null && appointment.Status == AppointmentStatus.Canceled)
             {
                 _appointments.Remove(appointment);
+                return await Task.FromResult(true);
             }
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Adding user method
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public Task AddUser(User user)
-        {
-            _users.Add(user);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Getting User method
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Task<User> GetUserById(string email)
-        {
-            throw new NotImplementedException();
+            return await Task.FromResult(false);
         }
     }
 }

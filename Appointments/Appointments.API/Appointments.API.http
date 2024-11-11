@@ -1,57 +1,11 @@
-@API_HostAddress = https://localhost:5122/api
-@SampleID = eceb0568-4d7e-430b-8a0d-0178cc21428a
-@SampleEmail = ajmarrugos@gmail.com
-@RecipientEmail = alberto.marrugo@unosquare.com
+@Appointments.API_HostAddress = https://localhost:5122/api
+@SampleAppointment = b2d4a2d4-1e85-43c3-a1a4-1f2244923dbc
 
-# Get all appointments
-GET {{API_HostAddress}}/appointments
-Accept: application/json
-###
-
-# Get appointment by ID
-GET {{API_HostAddress}}/appointments/{{SampleID}}
-Accept: application/json
-###
-
-# Get appointments by sender email
-GET {{API_HostAddress}}/appointments/sender/{{SampleEmail}}
-Accept: application/json
-###
-
-# Create a new appointment
-POST {{API_HostAddress}}/appointments
+### Get a List of Appointments
+GET {{Appointments.API_HostAddress}}/appointments
 Content-Type: application/json
 
-{
-    "SenderEmail": "{{SampleEmail}}",
-    "RecipientEmail": "{{RecipientEmail}}",
-    "ApptName": "Project Meeting",
-    "ApptDate": "2024-12-01",
-    "ApptTime": "10:00"
-}
-###
 
-# Reschedule an appointment
-PUT {{API_HostAddress}}/appointments/reschedule?{{SampleEmail}}
+### Get Appointment by ID
+GET {{Appointments.API_HostAddress}}/GetAppointmentById/{{SampleAppointment}}
 Content-Type: application/json
-
-{
-  "id": 1,
-  "date": "02-12-24",
-  "time": "14:00"
-}
-###
-
-# Sign off an appointment (approve or cancel)
-PUT {{API_HostAddress}}/appointments/signoff/{{SampleID}}
-Content-Type: application/json
-
-{
-    "Status": "Approved"
-}
-###
-
-# Delete an appointment
-DELETE {{API_HostAddress}}/appointments/{{SampleID}}
-Accept: application/json
-###
