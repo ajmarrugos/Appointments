@@ -11,14 +11,14 @@ namespace Appointments.API.Controllers
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
-        private readonly IAppointmentsRepository _appointmentsRepository;
+        private readonly IAppointmentsRepository _appointments;
         private readonly ILogger<AppointmentsController> _logger;
         private readonly List<string> _managers = new List<string> { "ajmarrugos@gmail.com" };
 
         // Dependency injection setting for the controller
         public AppointmentsController(IAppointmentsRepository appointmentsRepository, ILogger<AppointmentsController> logger)
         {
-            _appointmentsRepository = appointmentsRepository;
+            _appointments = appointmentsRepository;
             _logger = logger;
         }
 
@@ -27,7 +27,7 @@ namespace Appointments.API.Controllers
         {
             try
             {
-                var appointments = await _appointmentsRepository.GetAllAppointments();
+                var appointments = await _appointments.GetAllAppointments();
                 if (appointments == null)
                 {
                     return NotFound("No appointments found.");
@@ -36,7 +36,6 @@ namespace Appointments.API.Controllers
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -46,7 +45,7 @@ namespace Appointments.API.Controllers
         {
             try
             {
-                var appointment = await _appointmentsRepository.GetAppointmentById(id);
+                var appointment = await _appointments.GetAppointmentById(id);
                 if (appointment == null)
                 {
                     return NotFound($"Appointment with id {id} not found.");
@@ -55,10 +54,13 @@ namespace Appointments.API.Controllers
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpGet("{attribute}/{value}")]
+        public async Task<IActionResult> QueryAppointment(string attribute, string value) =>
+            Ok(await _appointments.QueryAppointments(attribute, value));
 
         [HttpPost] // POST: api/Appointments
         public async Task<ActionResult<Appointment>> CreateAppointment([FromBody] Appointment appointment)
@@ -71,12 +73,11 @@ namespace Appointments.API.Controllers
 
             try
             {
-                var newAppointment = await _appointmentsRepository.CreateAppointment(appointment);
+                var newAppointment = await _appointments.CreateAppointment(appointment);
 
                 // Send notifications to both sender and recipient
                 // SendEmailNotification(createdAppointment.SenderEmail, createdAppointment.RecipientEmail);
 
-                await _appointmentsRepository.CreateAppointment(appointment);
                 return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, appointment);
             }
             catch (Exception ex)
@@ -89,15 +90,10 @@ namespace Appointments.API.Controllers
         [HttpPut("reschedule/{id}")] // PUT: api/Appointments/reschedule/{id}
         public async Task<ActionResult<Appointment>> RescheduleAppointment(int id, [FromBody] RescheduleRequest request)
         {
-            var appointment = await _appointmentsRepository.GetAppointmentById(id);
+            var appointment = await _appointments.GetAppointmentById(id);
             if (appointment == null)
             {
                 return NotFound("Appointment not found.");
-            }
-
-            if (appointment.Status != "Created")
-            {
-                return BadRequest("Only appointments in 'Created' status can be rescheduled.");
             }
 
             // Ensure the requestor is authorized to reschedule
@@ -106,28 +102,33 @@ namespace Appointments.API.Controllers
                 return Unauthorized("You are not authorized to reschedule this appointment.");
             }
 
+            if (appointment.Status != "pending")
+            {
+                return BadRequest("Only 'pending' appointments can be rescheduled.");
+            }
+
             // Update appointment details
             appointment.Date = request.NewDate;
             appointment.Time = request.NewTime;
-            appointment.Status = "Rescheduled";
-            await _appointmentsRepository.UpdateAppointment(appointment);
+            appointment.Status = "rescheduled";
+            await _appointments.UpdateAppointment(appointment);
 
-            return NoContent();
+            return Ok($"Appointment '{appointment.Id}' sucessfully rescheduled for: {appointment.Date} @{appointment.Time}");
         }
 
-        [HttpPut("signoff/{senderEmail}/{id}")] // PUT: api/Appointments/signoff/{id}
+        [HttpPut("sign/{senderEmail}/{id}")] // PUT: api/Appointments/signoff/{id}
         public async Task<ActionResult<Appointment>> SignAppointment(string senderEmail, int id, SignRequest signRequest)
         {
             try
             {
-                var appointment = await _appointmentsRepository.GetAppointmentById(id);
+                var appointment = await _appointments.GetAppointmentById(id);
                 if (appointment == null)
                     return NotFound("Appointment not found.");
 
-                if (appointment.Status != "Created" && appointment.Status != "Rescheduled")
+                if (appointment.Status != "pending" && appointment.Status != "rescheduled")
                 {
-                    _logger.LogWarning("Attempt to sign an appointment not in Created or Rescheduled state.");
-                    return BadRequest("Only appointments in 'Created' or 'Rescheduled' state can be signed.");
+                    _logger.LogWarning("Attempt to sign an appointment that is not pending or rescheduled");
+                    return BadRequest("Only 'pending' or 'rescheduled' appointments can be signed.");
                 }
 
                 if (appointment.Sender != signRequest.Sender && appointment.Recipient != signRequest.Sender)
@@ -136,8 +137,8 @@ namespace Appointments.API.Controllers
                 if (!_managers.Contains(signRequest.Sender))
                     return Unauthorized("Only managers are allowed to sign appointments.");
 
-                appointment.Status = signRequest.Signature == "Accepted" ? "Approved" : "Rejected";
-                await _appointmentsRepository.UpdateAppointment(appointment);
+                appointment.Status = signRequest.Signature == "accepted" ? "approved" : "rejected";
+                await _appointments.UpdateAppointment(appointment);
                 return NoContent();
             }
             catch (Exception ex)
@@ -151,7 +152,7 @@ namespace Appointments.API.Controllers
         public async Task<IActionResult> DeleteAppointment([FromQuery] int id, [FromQuery] string email)
         {
             // Retrieve the appointment by ID
-            var appointment = await _appointmentsRepository.GetAppointmentById(id);
+            var appointment = await _appointments.GetAppointmentById(id);
 
             if (appointment == null)
                 return NotFound("Appointment not found.");
@@ -163,11 +164,32 @@ namespace Appointments.API.Controllers
             if (!_managers.Contains(email))
                 return Unauthorized("Only managers are allowed to remove appointments.");
 
-            if (appointment.Status != "Denied" && appointment.Status != "Expired")
-                return BadRequest("Only 'Denied' or 'Expired' appointments can be removed.");
+            if (appointment.Status != "rejected" && appointment.Status != "expired")
+                return BadRequest("Only 'rejected' or 'expired' appointments can be removed.");
 
             // Proceed with deletion
-            await _appointmentsRepository.DeleteAppointment(id);
+            await _appointments.DeleteAppointment(id);
+            return NoContent();
+        }
+
+        [HttpPut("expire")] // PUT: api/Appointments/
+        public async Task<IActionResult> ExpirePastAppointments()
+        {
+            var appointments = await _appointments.GetAllAppointments();
+            var currentTime = DateTime.Now;
+
+            foreach (var appointment in appointments)
+            {
+                if (appointment.Status == "created" &&
+                    (appointment.Date < DateOnly.FromDateTime(currentTime) ||
+                    (appointment.Date == DateOnly.FromDateTime(currentTime) &&
+                     appointment.Time < TimeOnly.FromDateTime(currentTime))))
+                {
+                    appointment.Status = "expired";
+                    await _appointments.UpdateAppointment(appointment);
+                }
+            }
+
             return NoContent();
         }
     }

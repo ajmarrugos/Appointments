@@ -24,8 +24,6 @@ public class Program
         // Initialize the manager role at startup
         await InitializeManagerRole(app, managerEmail);
 
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
         app.MapControllers();
 
         await app.RunAsync();
@@ -44,7 +42,7 @@ public class Program
         else
         {
             // Use in-memory repository for development or testing
-            builder.Services.AddScoped<IAppointmentsRepository, LocalRepository>();
+            builder.Services.AddSingleton<IAppointmentsRepository, LocalRepository>();
         }
 
         // Register application services
