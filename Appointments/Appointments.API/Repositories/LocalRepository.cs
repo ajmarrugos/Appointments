@@ -49,7 +49,7 @@ namespace Appointments.API.Repositories
                     "id" => query.Where(a => a.Id == int.Parse(value)), // Parse the value to int for Id
                     "name" => query.Where(a => a.Name.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for Name
                     "status" => query.Where(a => a.Status.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for Status
-                    "date" => query.Where(a => a.Date.ToString("dd-MM-yy") == value), // Format Date for comparison
+                    "date" => query.Where(a => a.Date.ToString("YY-MM-DD") == value), // Format Date for comparison
                     "sender" => query.Where(a => a.Sender.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
                     "recipient" => query.Where(a => a.Recipient.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
                     _ => throw new ArgumentException("Invalid attribute specified")

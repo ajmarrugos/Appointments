@@ -96,21 +96,21 @@ namespace Appointments.API.Controllers
                 return NotFound("Appointment not found.");
             }
 
-            if (appointment.Status != "pending")
-            {
-                return BadRequest("Only 'pending' appointments can be rescheduled.");
-            }
-
             // Ensure the requestor is authorized to reschedule
             if (request.Sender != appointment.Sender && request.Sender != appointment.Recipient)
             {
                 return Unauthorized("You are not authorized to reschedule this appointment.");
             }
 
+            if (appointment.Status != "pending")
+            {
+                return BadRequest("Only 'pending' appointments can be rescheduled.");
+            }
+
             // Update appointment details
             appointment.Date = request.NewDate;
             appointment.Time = request.NewTime;
-            appointment.Status = "Rescheduled";
+            appointment.Status = "rescheduled";
             await _appointments.UpdateAppointment(appointment);
 
             return Ok($"Appointment '{appointment.Id}' sucessfully rescheduled for: {appointment.Date} @{appointment.Time}");

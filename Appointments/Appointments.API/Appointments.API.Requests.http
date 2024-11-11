@@ -28,12 +28,12 @@ Content-Type: application/json
     "Recipient": "{{RecipientEmail}}",
     "Name": "Project Meeting",
     "Date": "2024-11-11",
-    "Time": "13:30"
+    "Time": "14:00"
 }
 ###
 
 # Reschedule an appointment
-PUT {{API_HostAddress}}/appointments/reschedule/{{SampleID}}
+PUT {{API_HostAddress}}/appointments/reschedule/2
 Content-Type: application/json
 
 {
