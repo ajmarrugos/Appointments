@@ -104,5 +104,33 @@ namespace Appointments.API.Repositories
                 throw new Exception("Could not delete appointment. Please try again.");
             }
         }
+
+        /// <summary>
+        /// Method to get all users
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<User>> GetAllUsersAsync() =>
+            await _context.Users.ToListAsync();
+
+        /// <summary>
+        /// Add users to the repository
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task AddUserAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public Task<IEnumerable<User>> GetManagerUsers()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SubscribeManager(User user)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

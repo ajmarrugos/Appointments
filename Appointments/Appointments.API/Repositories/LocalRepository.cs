@@ -106,11 +106,14 @@ namespace Appointments.API.Repositories
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public Task AddUser(User user)
+        public Task SubscribeManager(User user)
         {
             _users.Add(user);
             return Task.CompletedTask;
         }
+
+        public Task<IEnumerable<User>> GetManagerUsers() =>
+            Task.FromResult<IEnumerable<User>>(_users);
 
         /// <summary>
         /// Getting User method
