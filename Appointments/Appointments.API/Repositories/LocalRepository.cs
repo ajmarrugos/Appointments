@@ -10,7 +10,7 @@ namespace Appointments.API.Repositories
         // List where to store appointments & users while development
         private readonly List<Appointment> _appointments = new();
         private readonly List<User> _users = new();
-        private int _nextId = 0; // Initial value for the auto-increment Id
+        private int _nextId = 1; // Initial value for the auto-increment Id
 
         /// <summary>
         /// Retrieves all appointments currently in the repository.
@@ -51,7 +51,7 @@ namespace Appointments.API.Repositories
                     "status" => query.Where(a => a.Status.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for Status
                     "date" => query.Where(a => a.Date.ToString("dd-MM-yy") == value), // Format Date for comparison
                     "sender" => query.Where(a => a.Sender.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
-                    "recpipient" => query.Where(a => a.Recipient.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
+                    "recipient" => query.Where(a => a.Recipient.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
                     _ => throw new ArgumentException("Invalid attribute specified")
                 };
 
@@ -78,7 +78,7 @@ namespace Appointments.API.Repositories
         public Task<Appointment> CreateAppointment(Appointment appointment)
         {
             appointment.Id = _nextId++;
-            appointment.Status = "created";
+            appointment.Status = "pending";
             _appointments.Add(appointment);
             return Task.FromResult(appointment);
         }

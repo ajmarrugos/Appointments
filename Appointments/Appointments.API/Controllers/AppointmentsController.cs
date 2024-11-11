@@ -96,9 +96,9 @@ namespace Appointments.API.Controllers
                 return NotFound("Appointment not found.");
             }
 
-            if (appointment.Status != "Created")
+            if (appointment.Status != "pending")
             {
-                return BadRequest("Only appointments in 'Created' status can be rescheduled.");
+                return BadRequest("Only 'pending' appointments can be rescheduled.");
             }
 
             // Ensure the requestor is authorized to reschedule
@@ -113,10 +113,10 @@ namespace Appointments.API.Controllers
             appointment.Status = "Rescheduled";
             await _appointments.UpdateAppointment(appointment);
 
-            return NoContent();
+            return Ok($"Appointment '{appointment.Id}' sucessfully rescheduled for: {appointment.Date} @{appointment.Time}");
         }
 
-        [HttpPut("signoff/{senderEmail}/{id}")] // PUT: api/Appointments/signoff/{id}
+        [HttpPut("sign/{senderEmail}/{id}")] // PUT: api/Appointments/signoff/{id}
         public async Task<ActionResult<Appointment>> SignAppointment(string senderEmail, int id, SignRequest signRequest)
         {
             try
@@ -125,10 +125,10 @@ namespace Appointments.API.Controllers
                 if (appointment == null)
                     return NotFound("Appointment not found.");
 
-                if (appointment.Status != "Created" && appointment.Status != "Rescheduled")
+                if (appointment.Status != "pending" && appointment.Status != "rescheduled")
                 {
-                    _logger.LogWarning("Attempt to sign an appointment not in Created or Rescheduled state.");
-                    return BadRequest("Only appointments in 'Created' or 'Rescheduled' state can be signed.");
+                    _logger.LogWarning("Attempt to sign an appointment that is not pending or rescheduled");
+                    return BadRequest("Only 'pending' or 'rescheduled' appointments can be signed.");
                 }
 
                 if (appointment.Sender != signRequest.Sender && appointment.Recipient != signRequest.Sender)
@@ -137,7 +137,7 @@ namespace Appointments.API.Controllers
                 if (!_managers.Contains(signRequest.Sender))
                     return Unauthorized("Only managers are allowed to sign appointments.");
 
-                appointment.Status = signRequest.Signature == "Accepted" ? "Approved" : "Rejected";
+                appointment.Status = signRequest.Signature == "accepted" ? "approved" : "rejected";
                 await _appointments.UpdateAppointment(appointment);
                 return NoContent();
             }
@@ -164,8 +164,8 @@ namespace Appointments.API.Controllers
             if (!_managers.Contains(email))
                 return Unauthorized("Only managers are allowed to remove appointments.");
 
-            if (appointment.Status != "Denied" && appointment.Status != "Expired")
-                return BadRequest("Only 'Denied' or 'Expired' appointments can be removed.");
+            if (appointment.Status != "rejected" && appointment.Status != "expired")
+                return BadRequest("Only 'rejected' or 'expired' appointments can be removed.");
 
             // Proceed with deletion
             await _appointments.DeleteAppointment(id);

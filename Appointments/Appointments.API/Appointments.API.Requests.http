@@ -1,5 +1,6 @@
 @API_HostAddress = https://localhost:5122/api
 @SampleID = 1
+@Attribute = recipient
 @SampleEmail = ajmarrugos@gmail.com
 @RecipientEmail = alberto.marrugo@unosquare.com
 
@@ -13,8 +14,8 @@ GET {{API_HostAddress}}/appointments/{{SampleID}}
 Accept: application/json
 ###
 
-# Get appointments by sender email
-GET {{API_HostAddress}}/appointments/sender/{{SampleEmail}}
+# Get appointments by attribute query
+GET {{API_HostAddress}}/appointments/{{Attribute}}/{{RecipientEmail}}
 Accept: application/json
 ###
 
@@ -26,19 +27,19 @@ Content-Type: application/json
     "Sender": "{{SampleEmail}}",
     "Recipient": "{{RecipientEmail}}",
     "Name": "Project Meeting",
-    "Date": "2024-12-01",
-    "Time": "10:00"
+    "Date": "2024-11-11",
+    "Time": "13:30"
 }
 ###
 
 # Reschedule an appointment
-PUT {{API_HostAddress}}/appointments/reschedule?{{SampleEmail}}
+PUT {{API_HostAddress}}/appointments/reschedule/{{SampleID}}
 Content-Type: application/json
 
 {
-  "id": 1,
-  "date": "02-12-24",
-  "time": "14:00"
+  "Sender": "{{SampleEmail}}",
+  "Date": "2024-12-01",
+  "Time": "14:00"
 }
 ###
 
