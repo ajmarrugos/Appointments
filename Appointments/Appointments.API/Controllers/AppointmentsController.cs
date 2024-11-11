@@ -36,7 +36,6 @@ namespace Appointments.API.Controllers
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -55,7 +54,6 @@ namespace Appointments.API.Controllers
             }
             catch (Exception ex)
             {
-                // Handle unexpected exceptions
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }

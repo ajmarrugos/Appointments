@@ -42,7 +42,7 @@ public class Program
         else
         {
             // Use in-memory repository for development or testing
-            builder.Services.AddScoped<IAppointmentsRepository, LocalRepository>();
+            builder.Services.AddSingleton<IAppointmentsRepository, LocalRepository>();
         }
 
         // Register application services
