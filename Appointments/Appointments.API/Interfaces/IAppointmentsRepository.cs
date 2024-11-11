@@ -10,5 +10,7 @@ namespace Appointments.API.Interfaces
         Task<Appointment> CreateAppointment(Appointment appointment);
         Task UpdateAppointment(Appointment appointment);
         Task DeleteAppointment(int id);
+        Task<IEnumerable<User>> GetManagerUsers();
+        Task SubscribeManager(User user);
     }
 }
