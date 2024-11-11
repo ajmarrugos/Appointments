@@ -42,17 +42,32 @@ namespace Appointments.API.Repositories
         {
             var query = _appointments.AsQueryable();
 
-            query = attribute.ToLower() switch
+            try
             {
-                "id" => query.Where(a => a.Id.ToString() == value),
-                "name" => query.Where(a => a.Name == value),
-                "state" => query.Where(a => a.Status == value),
-                "date" => query.Where(a => a.Date.ToString("dd-MM-yy") == value),
-                "requestor" => query.Where(a => a.Sender == value),
-                _ => query
-            };
+                query = attribute.ToLower() switch
+                {
+                    "id" => query.Where(a => a.Id == int.Parse(value)), // Parse the value to int for Id
+                    "name" => query.Where(a => a.Name.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for Name
+                    "status" => query.Where(a => a.Status.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for Status
+                    "date" => query.Where(a => a.Date.ToString("dd-MM-yy") == value), // Format Date for comparison
+                    "sender" => query.Where(a => a.Sender.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
+                    "recpipient" => query.Where(a => a.Recipient.Equals(value, StringComparison.OrdinalIgnoreCase)), // Case-insensitive comparison for email
+                    _ => throw new ArgumentException("Invalid attribute specified")
+                };
 
-            return await query.ToListAsync();
+                // Since _appointments is an in-memory list, directly call ToList()
+                return query.ToList();
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"Error parsing value for {attribute}: {ex.Message}");
+                return Enumerable.Empty<Appointment>(); // Return empty if there’s a parsing issue
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Enumerable.Empty<Appointment>();
+            }
         }
 
         /// <summary>
