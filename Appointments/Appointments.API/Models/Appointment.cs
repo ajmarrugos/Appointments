@@ -31,7 +31,7 @@ namespace Appointments.API.Models
 
         // ApptTime must be a valid time in the future
         [Required(ErrorMessage = "Appointment time is required ")]
-        [ValidDate(ErrorMessage = "Appointment date must be provided in HH:MM format and cannot be past")]
+        [ValidTime(ErrorMessage = "Appointment date must be provided in HH:MM format and cannot be past")]
         public TimeOnly Time { get; set; }
 
         // Status of the appointment (Created, Approved, Rescheduled, Canceled)
