@@ -62,7 +62,7 @@ namespace Appointments.API.Repositories
         /// <returns>The appointment created</returns>
         public Task<Appointment> CreateAppointment(Appointment appointment)
         {
-            appointment.Id = _nextId+1;
+            appointment.Id = _nextId++;
             appointment.Status = "created";
             _appointments.Add(appointment);
             return Task.FromResult(appointment);

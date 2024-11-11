@@ -78,7 +78,6 @@ namespace Appointments.API.Controllers
                 // Send notifications to both sender and recipient
                 // SendEmailNotification(createdAppointment.SenderEmail, createdAppointment.RecipientEmail);
 
-                await _appointments.CreateAppointment(appointment);
                 return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, appointment);
             }
             catch (Exception ex)
@@ -173,7 +172,7 @@ namespace Appointments.API.Controllers
             return NoContent();
         }
 
-        [HttpPut("expire")]
+        [HttpPut("expire")] // PUT: api/Appointments/
         public async Task<IActionResult> ExpirePastAppointments()
         {
             var appointments = await _appointments.GetAllAppointments();
