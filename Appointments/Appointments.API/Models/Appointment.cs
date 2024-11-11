@@ -13,31 +13,31 @@ namespace Appointments.API.Models
         // SenderEmail must be provided and must be in a valid email format
         [Required(ErrorMessage = "Sender email is required.")]
         [EmailAddress(ErrorMessage = "Invalid sender email format.")]
-        public string SenderEmail { get; set; } = string.Empty;
+        public string Sender { get; set; } = string.Empty;
 
         // RecipientEmail must be provided and must be in a valid email format
         [Required(ErrorMessage = "Recipient email is required.")]
         [EmailAddress(ErrorMessage = "Invalid recipient email format.")]
-        public string RecipientEmail { get; set; } = string.Empty;
+        public string Recipient { get; set; } = string.Empty;
 
         // ApptName must be provided and cannot be empty and must be 48 characters only
         [Required(ErrorMessage = "Appointment name is required. No more than 48 characters"), StringLength(48)]
-        public string ApptName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         // ApptDate must be a valid date in the future
         [Required(ErrorMessage = "Appointment date is required")]
         [ValidDate(ErrorMessage = "Appointment date must be in  YY-MM-DD format and cannot be past")]
-        public DateOnly ApptDate { get; set; }
+        public DateOnly Date { get; set; }
 
         // ApptTime must be a valid time in the future
         [Required(ErrorMessage = "Appointment time is required ")]
         [ValidDate(ErrorMessage = "Appointment date must be provided in HH:MM format and cannot be past")]
-        public TimeOnly ApptTime { get; set; }
+        public TimeOnly Time { get; set; }
 
         // Status of the appointment (Created, Approved, Rescheduled, Canceled)
         [Required(ErrorMessage = "Appointment status is required.")]
         [ValidStatus(ErrorMessage = "Appointment status must be valid")]
-        public string ApptStatus { get; set; } = "created";
+        public string Status { get; set; } = "created";
     }
 
     // Custom Validation Attribute for validating that the appointment date is in the future
