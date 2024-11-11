@@ -11,14 +11,14 @@ namespace Appointments.API.Controllers
     [Route("api/appointments")]
     public class AppointmentsController : ControllerBase
     {
-        private readonly IAppointmentsRepository _appointmentsRepository;
+        private readonly IAppointmentsRepository _appointments;
         private readonly ILogger<AppointmentsController> _logger;
         private readonly List<string> _managers = new List<string> { "ajmarrugos@gmail.com" };
 
         // Dependency injection setting for the controller
         public AppointmentsController(IAppointmentsRepository appointmentsRepository, ILogger<AppointmentsController> logger)
         {
-            _appointmentsRepository = appointmentsRepository;
+            _appointments = appointmentsRepository;
             _logger = logger;
         }
 
@@ -27,7 +27,7 @@ namespace Appointments.API.Controllers
         {
             try
             {
-                var appointments = await _appointmentsRepository.GetAllAppointments();
+                var appointments = await _appointments.GetAllAppointments();
                 if (appointments == null)
                 {
                     return NotFound("No appointments found.");
@@ -46,7 +46,7 @@ namespace Appointments.API.Controllers
         {
             try
             {
-                var appointment = await _appointmentsRepository.GetAppointmentById(id);
+                var appointment = await _appointments.GetAppointmentById(id);
                 if (appointment == null)
                 {
                     return NotFound($"Appointment with id {id} not found.");
@@ -71,12 +71,12 @@ namespace Appointments.API.Controllers
 
             try
             {
-                var newAppointment = await _appointmentsRepository.CreateAppointment(appointment);
+                var newAppointment = await _appointments.CreateAppointment(appointment);
 
                 // Send notifications to both sender and recipient
                 // SendEmailNotification(createdAppointment.SenderEmail, createdAppointment.RecipientEmail);
 
-                await _appointmentsRepository.CreateAppointment(appointment);
+                await _appointments.CreateAppointment(appointment);
                 return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, appointment);
             }
             catch (Exception ex)
@@ -89,7 +89,7 @@ namespace Appointments.API.Controllers
         [HttpPut("reschedule/{id}")] // PUT: api/Appointments/reschedule/{id}
         public async Task<ActionResult<Appointment>> RescheduleAppointment(int id, [FromBody] RescheduleRequest request)
         {
-            var appointment = await _appointmentsRepository.GetAppointmentById(id);
+            var appointment = await _appointments.GetAppointmentById(id);
             if (appointment == null)
             {
                 return NotFound("Appointment not found.");
@@ -110,7 +110,7 @@ namespace Appointments.API.Controllers
             appointment.Date = request.NewDate;
             appointment.Time = request.NewTime;
             appointment.Status = "Rescheduled";
-            await _appointmentsRepository.UpdateAppointment(appointment);
+            await _appointments.UpdateAppointment(appointment);
 
             return NoContent();
         }
@@ -120,7 +120,7 @@ namespace Appointments.API.Controllers
         {
             try
             {
-                var appointment = await _appointmentsRepository.GetAppointmentById(id);
+                var appointment = await _appointments.GetAppointmentById(id);
                 if (appointment == null)
                     return NotFound("Appointment not found.");
 
@@ -137,7 +137,7 @@ namespace Appointments.API.Controllers
                     return Unauthorized("Only managers are allowed to sign appointments.");
 
                 appointment.Status = signRequest.Signature == "Accepted" ? "Approved" : "Rejected";
-                await _appointmentsRepository.UpdateAppointment(appointment);
+                await _appointments.UpdateAppointment(appointment);
                 return NoContent();
             }
             catch (Exception ex)
@@ -151,7 +151,7 @@ namespace Appointments.API.Controllers
         public async Task<IActionResult> DeleteAppointment([FromQuery] int id, [FromQuery] string email)
         {
             // Retrieve the appointment by ID
-            var appointment = await _appointmentsRepository.GetAppointmentById(id);
+            var appointment = await _appointments.GetAppointmentById(id);
 
             if (appointment == null)
                 return NotFound("Appointment not found.");
@@ -167,7 +167,7 @@ namespace Appointments.API.Controllers
                 return BadRequest("Only 'Denied' or 'Expired' appointments can be removed.");
 
             // Proceed with deletion
-            await _appointmentsRepository.DeleteAppointment(id);
+            await _appointments.DeleteAppointment(id);
             return NoContent();
         }
     }

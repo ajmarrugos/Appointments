@@ -24,8 +24,6 @@ public class Program
         // Initialize the manager role at startup
         await InitializeManagerRole(app, managerEmail);
 
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
         app.MapControllers();
 
         await app.RunAsync();

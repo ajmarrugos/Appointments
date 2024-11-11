@@ -1,5 +1,5 @@
 @API_HostAddress = https://localhost:5122/api
-@SampleID = eceb0568-4d7e-430b-8a0d-0178cc21428a
+@SampleID = 2
 @SampleEmail = ajmarrugos@gmail.com
 @RecipientEmail = alberto.marrugo@unosquare.com
 
