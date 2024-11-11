@@ -10,7 +10,7 @@ namespace Appointments.API.Repositories
         // List where to store appointments & users while development
         private readonly List<Appointment> _appointments = new();
         private readonly List<User> _users = new();
-        private int _nextId = 1; // Initial value for the auto-increment Id
+        private int _nextId = 0; // Initial value for the auto-increment Id
 
         /// <summary>
         /// Retrieves all appointments currently in the repository.
@@ -62,7 +62,7 @@ namespace Appointments.API.Repositories
         /// <returns>The appointment created</returns>
         public Task<Appointment> CreateAppointment(Appointment appointment)
         {
-            appointment.Id = _nextId++;
+            appointment.Id = _nextId+1;
             appointment.Status = "created";
             _appointments.Add(appointment);
             return Task.FromResult(appointment);
